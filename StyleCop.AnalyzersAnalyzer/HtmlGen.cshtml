@@ -1,0 +1,36 @@
+﻿@inherits StyleCop.AnalyzersAnalyzer.HtmlGenBaseClass
+@using System.Globalization
+@using StyleCop.AnalyzersAnalyzer
+    @functions
+{
+        string GetDiagnosticColorClass(DiagnosticInformation diagnostic)
+        {
+            return diagnostic.Enabled ? "success" : diagnostic.Finished ? "warning" : "danger";
+        }
+    }
+<!DOCTYPE html>
+    <html>
+    <head>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet" />
+        <title>Status page</title>
+    </head>
+    <body style="padding: 5em;">
+        <h1>Current status (Last update @DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) UTC)</h1>
+
+        @foreach (var diagnosticGroup in Model)
+        {
+            <h2>@diagnosticGroup.Type</h2>
+            <table class="table table-hover table-condensed">
+                <thead><tr><td>ID</td><td>Name</td><td>Implemented (@diagnosticGroup.Diagnostics.Count(x => x.Finished)/@diagnosticGroup.Diagnostics.Count)</td><td>Tests (@diagnosticGroup.Diagnostics.Count(x => x.Enabled)/@diagnosticGroup.Diagnostics.Count)</td></thead>
+                @foreach (var diagnostic in diagnosticGroup.Diagnostics)
+                {
+                    <tr class="@GetDiagnosticColorClass(diagnostic)">
+                        <td><a href="http://www.stylecop.com/docs/SA@(diagnostic.Id).html">SA@(diagnostic.Id)</a></td>
+                        <td>@diagnostic.Name</td>
+                        <td><input type="checkbox" checked="@(diagnostic.Finished)" disabled="disabled"/></td>
+                        <td><input type="checkbox" checked="@(diagnostic.Enabled)" disabled="disabled" /></td>
+                    </tr>
+                }
+            </table>
+        }
+    </body>
