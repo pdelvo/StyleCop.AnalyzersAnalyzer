@@ -82,9 +82,4 @@ namespace StyleCop.AnalyzersAnalyzer
             return "<input type=\"checkbox\" " + (finished ? "checked=\"checked\"" : "") + "  disabled=\"disabled\" />";
         }
     }
-    public class DiagnosticGroup
-    {
-        public string Type { get; set; }
-        public List<DiagnosticInformation> Diagnostics { get; set; }
-    }
 }

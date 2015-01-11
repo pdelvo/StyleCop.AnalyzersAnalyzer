@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace StyleCop.AnalyzersAnalyzer
@@ -64,7 +65,7 @@ namespace StyleCop.AnalyzersAnalyzer
 
                     if(typeInfo != null)
                     {
-                        if (typeInfo.BaseType != diagnosticAnalyzer)
+                        if (!HasBaseTypeRecursive(typeInfo.BaseType, diagnosticAnalyzer))
                         {
                             return null;
                         }
@@ -124,6 +125,15 @@ namespace StyleCop.AnalyzersAnalyzer
             DiagnosticInformation info = new DiagnosticInformation(id, name, type, finished, enabled);
 
             return info;
+        }
+
+        private static bool HasBaseTypeRecursive(INamedTypeSymbol type, INamedTypeSymbol baseType)
+        {
+            if (type == baseType)
+                return true;
+            if (type.BaseType == null)
+                return false;
+            return HasBaseTypeRecursive(type.BaseType, baseType);
         }
     }
     public class DiagnosticGroup
