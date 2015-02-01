@@ -4,7 +4,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace StyleCop.AnalyzersAnalyzer
 {
@@ -15,17 +17,19 @@ namespace StyleCop.AnalyzersAnalyzer
         public string Type { get; }
         public bool Finished { get; }
         public bool Enabled { get; }
+        public bool HasCodeFix { get; }
 
-        private DiagnosticInformation(string id, string name, string type, bool finished, bool enabled)
+        private DiagnosticInformation(string id, string name, string type, bool finished, bool enabled, bool hasCodeFix)
         {
             Id = id;
             Name = name;
             Type = type;
             Finished = finished;
             Enabled = enabled;
+            HasCodeFix = hasCodeFix;
         }
 
-        public static DiagnosticInformation Create(SyntaxTree tree, Compilation compilation)
+        public static DiagnosticInformation Create(SyntaxTree tree, Compilation compilation, CodeFixProvider[] codeFixProviders)
         {
             Regex diagnosticPathRegex = new Regex(@"(?<type>[A-Za-z]+)Rules\\SA(?<id>[0-9]{4})(?<name>[A-Za-z]+)\.cs$");
             var match = diagnosticPathRegex.Match(tree.FilePath);
@@ -111,7 +115,7 @@ namespace StyleCop.AnalyzersAnalyzer
                                             }
                                             else
                                             {
-                                                System.Console.WriteLine("Not supported");
+                                                Console.WriteLine("Not supported");
                                             }
                                         }
                                     }
@@ -122,7 +126,19 @@ namespace StyleCop.AnalyzersAnalyzer
                 }
             }
 
-            DiagnosticInformation info = new DiagnosticInformation(id, name, type, finished, enabled);
+            // Check if there is a code fix
+            bool codeFix = false;
+
+            foreach (var provider in codeFixProviders)
+            {
+                if (provider.GetFixableDiagnosticIds().Any(x => x == "SA" + id))
+                {
+                    codeFix = true;
+                    break;
+                }
+            }
+
+            DiagnosticInformation info = new DiagnosticInformation(id, name, type, finished, enabled, codeFix);
 
             return info;
         }

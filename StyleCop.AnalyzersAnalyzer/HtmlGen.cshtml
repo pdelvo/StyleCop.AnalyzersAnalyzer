@@ -21,7 +21,7 @@
         {
             <h2>@diagnosticGroup.Type</h2>
             <table class="table table-hover table-condensed">
-                <thead><tr><td>ID</td><td>Name</td><td>Implemented (@diagnosticGroup.Diagnostics.Count(x => x.Finished)/@diagnosticGroup.Diagnostics.Count)</td><td>Tests (@diagnosticGroup.Diagnostics.Count(x => x.Enabled)/@diagnosticGroup.Diagnostics.Count)</td></thead>
+                <thead><tr><td>ID</td><td>Name</td><td>Implemented (@diagnosticGroup.Diagnostics.Count(x => x.Finished)/@diagnosticGroup.Diagnostics.Count)</td><td>Tests (@diagnosticGroup.Diagnostics.Count(x => x.Enabled)/@diagnosticGroup.Diagnostics.Count)</td><td>Has Code Fix (@diagnosticGroup.Diagnostics.Count(x => x.HasCodeFix)/@diagnosticGroup.Diagnostics.Count)</td></thead>
                 @foreach (var diagnostic in diagnosticGroup.Diagnostics)
                 {
                     <tr class="@GetDiagnosticColorClass(diagnostic)">
@@ -29,6 +29,7 @@
                         <td>@diagnostic.Name</td>
                         <td><input type="checkbox" checked="@(diagnostic.Finished)" disabled="disabled"/></td>
                         <td><input type="checkbox" checked="@(diagnostic.Enabled)" disabled="disabled" /></td>
+                        <td><input type="checkbox" checked="@(diagnostic.HasCodeFix)" disabled="disabled" /></td>
                     </tr>
                 }
             </table>

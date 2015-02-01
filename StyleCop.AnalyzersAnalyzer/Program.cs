@@ -13,6 +13,7 @@ namespace StyleCop.AnalyzersAnalyzer
     using System.Linq;
     using System.Reflection;
     using System.Text.RegularExpressions;
+    using Microsoft.CodeAnalysis.CodeFixes;
 
     class Program
     {
@@ -34,7 +35,18 @@ namespace StyleCop.AnalyzersAnalyzer
 
                 var compilation = project.GetCompilationAsync().Result;
 
-                var diagnostics = from diagnostic in compilation.SyntaxTrees.Select(x => DiagnosticInformation.Create(x, compilation))
+                compilation = compilation.WithOptions(compilation.Options.WithOutputKind(OutputKind.DynamicallyLinkedLibrary));
+
+                MemoryStream memStream = new MemoryStream();
+
+                var emitResult = compilation.Emit(memStream);
+
+                var assembly = Assembly.Load(memStream.ToArray());
+
+                var codeFixTypes = assembly.ExportedTypes.Where(x => x.FullName.EndsWith("CodeFixProvider"));
+                var codeFixProviders = codeFixTypes.Select(t => Activator.CreateInstance(t, true)).OfType<CodeFixProvider>().Where(x => x != null).ToArray();
+                
+                var diagnostics = from diagnostic in compilation.SyntaxTrees.Select(x => DiagnosticInformation.Create(x, compilation, codeFixProviders))
                                   where diagnostic != null
                                   orderby diagnostic.Id
                                   group diagnostic by diagnostic.Type into g
